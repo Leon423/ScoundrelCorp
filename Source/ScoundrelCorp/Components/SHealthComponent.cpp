@@ -12,7 +12,7 @@ USHealthComponent::USHealthComponent()
 	DefaultHealth = 100;
 	bIsDead = false;
 
-	TeamNum = 255;
+	TeamNum = 0;
 
 	SetIsReplicated(true);
 }
@@ -109,6 +109,12 @@ bool USHealthComponent::IsFriendly(AActor* ActorA, AActor* ActorB)
 		return true;
 	}
 
+	if(HealthCompA->TeamNum == 0 && HealthCompB->TeamNum == 0)
+	{
+		// 0 is a flag that lets us know this is a deathmatch (no teams)
+		return false;
+	}
+
 	return HealthCompA->TeamNum == HealthCompB->TeamNum;
 
 }
@@ -118,6 +124,7 @@ void USHealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(USHealthComponent, Health);
+	DOREPLIFETIME(USHealthComponent, TeamNum);
 
 }
 

@@ -2,6 +2,8 @@
 
 
 #include "SCharacter.h"
+
+#include "SGameMode.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
@@ -41,6 +43,8 @@ void ASCharacter::BeginPlay()
 
 	DefaultFOV = CameraComp->FieldOfView;
 
+	lastAbilityTime = 0.0f;
+	
 	if (GetLocalRole() == ROLE_Authority) {
 		//spawn a default weapon
 		FActorSpawnParameters SpawnParams;
@@ -86,6 +90,11 @@ void ASCharacter::HandleZoom(float DeltaTime)
 	const float NewFOV = FMath::FInterpTo(CameraComp->FieldOfView, TargetFOV, DeltaTime, CurrentWeapon->GetZoomSpeed());
 
 	CameraComp->SetFieldOfView(NewFOV);
+}
+
+void ASCharacter::OnRep_Ability()
+{
+	// call animation stuff
 }
 
 
@@ -134,7 +143,37 @@ void ASCharacter::StopReload()
 		CurrentWeapon->StopReload();
 }
 
+/** Function used to kickoff ability, the PERFORMABILITY function should contain actual ability logic for this character.*/
+void ASCharacter::StartAbility()
+{
+	if(GetLocalRole() < ROLE_Authority)
+		ServerStartAbility();
+	
+	if(GetWorld()->TimeSeconds - lastAbilityTime >= 0.0f)
+	{
+		//function used to replicate this will kick off the animations, need to run it locally for the owner though.
+		// I'm not going to have ability use stop shooting/reloading, so we don't care about the value of this we just want to trigger the repNotify.
+		bPendingAbility = !bPendingAbility;
+		PerformAbility();
+	}
 
+	GetWorldTimerManager().SetTimer(TimerHandle_AbilityTime, this, &ASCharacter::CompleteAbility, AbilityCooldown, false);
+}
+
+void ASCharacter::CompleteAbility()
+{
+	lastAbilityTime = GetWorld()->TimeSeconds;
+}
+
+void ASCharacter::ServerStartAbility_Implementation()
+{
+	StartAbility();
+}
+
+bool ASCharacter::ServerStartAbility_Validate()
+{
+	return true;
+}
 
 void ASCharacter::OnHealthChanged(USHealthComponent * OwningHealthComp, float Health, float HealthDelta, const UDamageType * DamageType, AController * InstigatedBy, AActor * DamageCauser)
 {
@@ -147,9 +186,19 @@ void ASCharacter::OnHealthChanged(USHealthComponent * OwningHealthComp, float He
 
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		
 		DetachFromControllerPendingDestroy();
 
 		SetLifeSpan(10.0f);
+
+		if(GetLocalRole() == ROLE_Authority)
+		{
+			ASGameMode* GM = Cast<ASGameMode>(GetWorld()->GetAuthGameMode());
+
+			GM->RestartDeadPlayer(PC);		
+		}
+		
 	}
 }
 
@@ -176,6 +225,7 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ASCharacter::StopFire);
 
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ASCharacter::StartReload);
+	PlayerInputComponent->BindAction("Ability", IE_Pressed, this, &ASCharacter::StartAbility);
 }
 
 FVector ASCharacter::GetPawnViewLocation() const

@@ -20,3 +20,11 @@ void ASGameMode::Tick(float DeltaSeconds)
     Super::Tick(DeltaSeconds);
 }
 
+void ASGameMode::RestartDeadPlayer(APlayerController* PC)
+{
+    if(PC && PC->GetPawn() == nullptr)
+    {
+        RestartPlayer(PC);
+    }
+}
+

@@ -35,6 +35,7 @@ ASWeapon::ASWeapon()
 	bIsFiring = false;
 	
 	BaseDamage = 20.0f;
+	HeadshotDamageMultiplier = 2.0f;
 	BulletSpread = 2.0f;
 	RateOfFire = 600;
 	ReloadTime = 1.0f;
@@ -144,7 +145,7 @@ void ASWeapon::Fire()
 
 			SurfaceType = UPhysicalMaterial::DetermineSurfaceType(Hit.PhysMaterial.Get());
 
-			float ActualDamage = (SurfaceType == SURFACE_FLESHVULNERABLE) ? BaseDamage * 4.0f : BaseDamage;
+			float ActualDamage = (SurfaceType == SURFACE_FLESHVULNERABLE) ? BaseDamage * HeadshotDamageMultiplier : BaseDamage;
 
 
 			UGameplayStatics::ApplyPointDamage(HitActor, ActualDamage, ShotDirection, Hit, MyOwner->GetInstigatorController(), MyOwner, DamageType);
@@ -217,6 +218,7 @@ void ASWeapon::Reload()
 		return;
 	}
 	//function used to replicate this will kick off the animations, now just set the "complete reload" timer for the ammo to be added
+	// the animations will need to be played locally though, as it doesn't repnotify to the owner.
 	bPendingReload = true;
 
 	GetWorldTimerManager().SetTimer(TimerHandle_ReloadTime, this, &ASWeapon::CompleteReload, ReloadTime, false);

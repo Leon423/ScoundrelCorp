@@ -77,6 +77,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	float BaseDamage;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	float HeadshotDamageMultiplier;
+	
 	FTimerHandle TimerHandle_TimeBetweenShots;
 
 	float LastFireTime;

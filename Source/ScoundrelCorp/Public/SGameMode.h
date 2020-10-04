@@ -24,4 +24,6 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "GameMode")
 		FOnActorKilled OnActorKilled;
+
+	void RestartDeadPlayer(APlayerController* PC);
 };

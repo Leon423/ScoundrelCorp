@@ -45,7 +45,7 @@ public:
 
 	float GetHealth() const;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "HealthComponent")
+	UPROPERTY(EditDefaultsOnly, Replicated, BlueprintReadOnly, Category = "HealthComponent")
 		uint8 TeamNum;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HealthComponent")

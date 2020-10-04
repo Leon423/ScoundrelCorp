@@ -72,6 +72,23 @@ protected:
 
 	void HandleZoom(float DeltaTime);
 
+	// abilities
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	float AbilityCooldown;
+
+	UPROPERTY(Transient, ReplicatedUsing=OnRep_Ability)
+	uint32 bPendingAbility : 1;
+
+	UFUNCTION()
+    void OnRep_Ability();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Player/Ability")
+		void PerformAbility();
+	
+	FTimerHandle TimerHandle_AbilityTime;
+	
+	float lastAbilityTime;
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -92,4 +109,13 @@ public:
 		void StartReload();
 	UFUNCTION(BlueprintCallable, Category = "Player")
 		void StopReload();
+
+	UFUNCTION(BlueprintCallable, Category = "Player")
+		void StartAbility();
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerStartAbility();
+
+	void CompleteAbility();
+
+	
 };
