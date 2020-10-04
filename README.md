@@ -1,5 +1,5 @@
 # ScoundrelCorp
- A RogueCompany style shooter prototype built over a week. Primarily created to learn more about networking a game.
+ A RogueCompany style shooter prototype originally meant to be built over a week but things got in the way so now I just work on it when I can. Primarily created to learn more about networking a game.
  
  # Current Plans
  Two Characters: Dallas and someone undecided
